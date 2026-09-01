@@ -13,6 +13,7 @@ only; an Agent should prefer the content-search tools provided by the current en
 
 - 0. Configuration and dependency inventory first
 - 1. Build the version corridor
+- 1.5 Ghost host: pin `from` to the running process
 - #1 source patch / monkey patch
 - #2 internal event names and persistent events
 - #3 internal service probes / Remote
@@ -44,6 +45,44 @@ fields must not be rewritten whole-object.
 2. connect edges by the `from → to` entries in the [version corridor index](README.md#version-corridor-index) — never by filename lexicographic order;
 3. read the full corridor first and fold net changes such as "removed then restored" before producing the change plan;
 4. when cards are missing, report an unsupported gap and research primary sources first; do not change the plugin from memory.
+
+## 1.5 Ghost host: pin `from` to the running process
+
+After an **in-place** upgrade of a source checkout (`git pull` / tag switch), an
+already-running host keeps executing the old code from memory, while `git describe`,
+`package.json`, and the directory name on disk all report the new version. Deriving
+`from` from the disk then mis-pins the corridor by a whole generation: the static
+checkup reads the new code while its conclusions get applied to an old process (or the
+reverse) — auth and compatibility findings come out inverted.
+
+Measured (2026-08-31, macOS, same machine, same checkout): a host started before the
+upgrade answered unauthenticated `POST /api/agentPreset.list` with `ok:true` (old-wire
+generation); a host started after it answered 401 to the identical request (new-wire
+generation, `DSH-0.1.2-A1-08`). Both processes sat on an identical `git describe` —
+the disk cannot tell them apart; only their replies can.
+
+Two checks, before any touchpoint scan:
+
+1. **Ask the process, not the disk** — a process started before the checkout's last
+   change is a ghost:
+
+   ```sh
+   ps -o lstart= -p <hostPid>
+   git -C <checkout> log -1 --format=%ci
+   ```
+
+2. **Probe, don't read version numbers** — send the target host one request whose
+   behavior is known to diverge between generations and classify it by the reply. The
+   unauthenticated `agentPreset.list` `ok`/401 fork above is a ready-made probe
+   (loopback is not exempt, see [DSH-0.1.2-A1-08](v0.1.2-alpha.1.md)); for the
+   composition-layer equivalent see [host-plane-probes.md](host-plane-probes.md).
+
+When a ghost is confirmed: restart the host and re-run the checkup, or explicitly pin
+the corridor's `from` to the process's actual generation and record it in the report.
+Do not explain an old process's 401s or compat behavior against the new on-disk code.
+Restarting may take down your own runtime — the safety side of that decision is
+[rollup R-12](rollup-0.1.2.md) (the upgrade target may be the currently running host);
+this step is its identification side.
 
 ## #1 source patch / monkey patch
 
