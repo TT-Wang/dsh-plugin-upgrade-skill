@@ -77,6 +77,11 @@ Two checks, before any touchpoint scan:
    (loopback is not exempt, see [DSH-0.1.2-A1-08](v0.1.2-alpha.1.md)); for the
    composition-layer equivalent see [host-plane-probes.md](host-plane-probes.md).
 
+Both checks plus the probe are packaged as
+[`scripts/ghost-host-check.mjs`](../scripts/ghost-host-check.mjs)
+(`node skills/plugin-upgrade/scripts/ghost-host-check.mjs <hostPid> <checkoutDir> [port]`;
+exit 1 = ghost, so shell gates can consume the verdict directly).
+
 When a ghost is confirmed: restart the host and re-run the checkup, or explicitly pin
 the corridor's `from` to the process's actual generation and record it in the report.
 Do not explain an old process's 401s or compat behavior against the new on-disk code.

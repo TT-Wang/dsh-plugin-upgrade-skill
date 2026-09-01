@@ -258,6 +258,15 @@ try {
   fail(plannerCheckFile, `migration planner check failed: ${error.stack ?? error.message}`)
 }
 
+// The ghost-host classifier must judge deterministically, keep unknown replies unknown, and stay offline-testable.
+const ghostCheckFile = join(root, 'skills', 'plugin-upgrade', 'scripts', 'ghost-host-check.check.mjs')
+try {
+  const { runGhostHostChecks } = await import(pathToFileURL(ghostCheckFile).href)
+  await runGhostHostChecks()
+} catch (error) {
+  fail(ghostCheckFile, `ghost-host check failed: ${error.stack ?? error.message}`)
+}
+
 // Official compatibility, community recommendations, collision semantics, and CLI behavior must agree.
 const namingCheckFile = join(root, 'skills', 'plugin-write', 'scripts', 'validate-names.check.mjs')
 try {
@@ -291,4 +300,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(`Validation OK: ${skillEntries.length} skill, ${cardFiles.length} card sets, ${totalCards} cards, ${markdownFiles.length} Markdown files, 7 touchpoint fixtures, 2 face contracts, read-only migration and workflow planners, offline naming validator, read-only registry v2 query`)
+console.log(`Validation OK: ${skillEntries.length} skill, ${cardFiles.length} card sets, ${totalCards} cards, ${markdownFiles.length} Markdown files, 7 touchpoint fixtures, 2 face contracts, read-only migration and workflow planners, offline ghost-host classifier, offline naming validator, read-only registry v2 query`)

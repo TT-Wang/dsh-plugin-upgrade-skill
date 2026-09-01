@@ -1,10 +1,11 @@
 # Tools in this directory
 
-Two executables live here, with very different safety postures — read the
+Three executables live here, with very different safety postures — read the
 verifier's note before running it on anything you do not trust:
 
 - **`plan-migration.mjs` — read-only migration planner.** Turns the existing pre-flight patterns and version-card metadata into a deterministic first-pass plan. It never writes the target repository and has no output-file option.
 - **`verify-runtime.mjs` — runtime verifier (NOT read-only).** Installs the plugin into an isolated temp profile and cold-boots it with a dead model endpoint to verify activation end-to-end, reporting failure attribution. It really installs and runs plugin code (including npm/git lifecycle scripts) with the caller's permissions — it is NOT a sandbox; run it inside a throwaway Docker container when verifying third-party plugins you do not fully trust. POSIX only. Self-check: `verify-runtime.check.mjs` (wired into `npm test`).
+- **`ghost-host-check.mjs` — running-host generation check (read-only on disk).** Executable form of pre-flight step 1.5: compares the host process's start time against the checkout's last change (a process that predates the change is a ghost still running the old code), verifies the argv actually resolves into the checkout (symlinks followed), and optionally sends one unauthenticated probe to classify the wire generation by the reply — never by a version number, and unknown replies stay unknown. `node skills/plugin-upgrade/scripts/ghost-host-check.mjs <hostPid> <checkoutDir> [port]`; exit 1 = ghost, so shell gates can consume it directly. Complements `verify-runtime.mjs`: that one cold-boots a fresh host, this one interrogates an existing one. POSIX only. Self-check: `ghost-host-check.check.mjs` (wired into the repo validator).
 
 Both live inside `skills/plugin-upgrade/` so that installers that copy only the skill directory (`npx skills add`, `gemini skills install --path skills`, Cursor) ship them together with the cards they read.
 
