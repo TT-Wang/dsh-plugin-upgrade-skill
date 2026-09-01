@@ -1,0 +1,25 @@
+schema_version = "1.4"
+# Harbor task configuration: dsh plugin migration exam H11 (ghost host pre-flight, hard container task)
+[task]
+name = "dsh-plugin-upgrade/h11-ghost-host-trap"
+version = "1.1.0"
+description = "A dsh host kept running through an in-place upgrade: does the pre-flight pin the migration's FROM to the running process's real wire generation instead of trusting the version on disk"
+keywords = ["dsh", "plugin-migration", "ghost-host", "pre-flight", "wire-generation", "harbor"]
+
+[metadata]
+difficulty = "hard"
+category = "programming"
+tags = ["dsh", "plugin-upgrade", "ghost-host", "english-prompt"]
+execution_contract = "BENCHMARK-AUTH-v1"
+
+[agent]
+timeout_sec = 900.0
+
+[verifier]
+timeout_sec = 600.0
+
+[environment]
+network_mode = "public"
+cpus = 1
+memory_mb = 2048
+storage_mb = 4096

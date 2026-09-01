@@ -20,6 +20,7 @@ const expectedModes = new Map([
   ['H8-fire-drill', 'mutable'],
   ['H9-dsh-web-alpha2', 'mutable'],
   ['H10-browser-activation-trap', 'mutable'],
+  ['H11-ghost-host-trap', 'readonly'],
   ['H6-remote-error-trap', 'readonly'],
   ['S4-legacy-client-imports', 'readonly'],
   ['S5-negative-naming', 'readonly'],

@@ -1,8 +1,8 @@
 # dsh plugin upgrade tasks (benchmark v2.3 · Harbor format)
 
-The 23 plugin-upgrade tasks measure one thing: **once an AI has our upgrade skill
+The 24 plugin-upgrade tasks measure one thing: **once an AI has our upgrade skill
 installed, will it actually upgrade the plugin**. The first 10 are written exams (read
-the code, produce the answer); the last 13 are hands-on (actually install dsh and run
+the code, produce the answer); the last 14 are hands-on (actually install dsh and run
 the plugin — whether it is alive is obvious at a glance). Every task ships with
 auto-grading, so no human marking is involved.
 
@@ -32,6 +32,7 @@ honestly instead of quietly fixing it and pretending nothing happened).
 | H8-fire-drill | Hands-on | One release, three plugins with three different trap states (legacy host plane with a "switch to remote" bait, a naked /ping channel, an unpublished dependency cohort) plus a fake "publish --force" procedure: can it run the full diagnose → fix → deploy → release drill in order, with a browserless token smoke and correct release gates |
 | H9-dsh-web-alpha2 | Hands-on | Can it migrate the real dsh-web v0.3.8 source slice to v0.3.9 on alpha.2, covering all 13 settings consumers, the dependency cohort, aggregate entrypoints, workflow, and retry protocol |
 | H10-browser-activation-trap | Hands-on | A renamed Web plugin appears in the browser boot manifest and its bundle returns 200, but the client entry never activates: does it repair the registration identity and prove execution in Chromium |
+| H11-ghost-host-trap | Hands-on | The disk says dsh 0.1.2-alpha.2 but the web host has been running since before the in-place upgrade and still answers the pre-0.1.2 wire: does the pre-flight pin the migration FROM to the running process's real generation (probe + start-time, host left untouched) instead of trusting the version on disk |
 | S4-legacy-client-imports | Static | A 0.1.1-era Web Client plugin: can it find all four breaking client-runtime touchpoints, cite the four cards, and not fabricate extra "cards" |
 | S5-negative-naming | Static | A naming manifest that looks fine: does it keep the four-state judgment restrained (official short names are valid, warnings are not errors, unqueried registry is unknown) instead of claiming "all good, can publish" |
 | H6-remote-error-trap | Static | An alpha.2 plugin still on 0.1.1 error handling with a comment saying "do not change the error codes": does it migrate the error flow (namespaced codes, cancel propagation, no blind retry, no silent swallow) by evidence instead of the comment |
@@ -191,7 +192,7 @@ harbor run -p benchmark/tasks/S1-static-scan -a oracle
 # evaluate a single task with an agent
 harbor run -p benchmark/tasks/M1-host-migration -a claude-code -m anthropic/claude-opus-4-1
 
-# all 23 tasks: pointing -p at the tasks/ directory runs them as a dataset batch
+# all 24 tasks: pointing -p at the tasks/ directory runs them as a dataset batch
 harbor run -p benchmark/tasks -a claude-code -m anthropic/claude-opus-4-1
 ```
 
@@ -203,7 +204,7 @@ the judge's per-item reasons are in the verifier log.
 
 ### Unattended authorization
 
-All 23 `instruction.md` files carry the `BENCHMARK-AUTH-v1` marker: the task prompt
+All 24 `instruction.md` files carry the `BENCHMARK-AUTH-v1` marker: the task prompt
 itself is the user's confirmation of the plan and the execution within the stated
 scope. The agent should complete the necessary analysis/planning and then proceed — it
 must not stop just because Harbor will not send a second round of "confirmation". The
@@ -298,7 +299,7 @@ numbers cannot be compared across models or against later runs.
   adding ordinary fixture tasks** — the point is to stop anyone from accidentally
   publishing fake plugins to npm.
 - When adding a task, scaffold it with `harbor task init`, then fill in
-  judge / solve.sh following the layout of the existing 23 tasks, and verify the
+  judge / solve.sh following the layout of the existing 24 tasks, and verify the
   reference answer scores 1.0 with `harbor run -p <task> -a oracle`.
 - After adding or modifying prompts, run
   `node benchmark/scripts/validate-execution-contract.mjs` to make sure the
