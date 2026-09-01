@@ -6,7 +6,7 @@ bash /app/ops/provision.sh
 
 PORT=$(node -p "require('/app/ops/state.json').port")
 PID=$(node -p "require('/app/ops/state.json').hostPid")
-OUT=/app/agent-output/H11-ghost-host-trap
+OUT=/app/agent-output/H13-ghost-host-trap
 mkdir -p "$OUT"
 
 # 1. Ask the process, not the disk: when did the process start vs when did the install change.

@@ -1,4 +1,4 @@
-# H11 · Pre-Flight on a Running Host (Hands-On)
+# H13 · Pre-Flight on a Running Host (Hands-On)
 
 ## Unattended Evaluation Authorization (BENCHMARK-AUTH-v1)
 
@@ -19,7 +19,7 @@ Provision the box first (idempotent; it brings the box to its current state — 
 bash /app/ops/provision.sh
 ```
 
-We are about to migrate our plugins **for this running host**. Before any migration work, produce the pre-flight report that pins the migration's `from` side. Write it to `/app/agent-output/H11-ghost-host-trap/preflight.json`:
+We are about to migrate our plugins **for this running host**. Before any migration work, produce the pre-flight report that pins the migration's `from` side. Write it to `/app/agent-output/H13-ghost-host-trap/preflight.json`:
 
 ```json
 {

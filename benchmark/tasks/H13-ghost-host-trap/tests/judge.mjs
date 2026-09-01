@@ -1,21 +1,24 @@
-// H11-ghost-host-trap grading: parse the agent's preflight.json and check every claim
+// H13-ghost-host-trap grading: parse the agent's preflight.json and check every claim
 // against the box itself (the running host and the disk install).
 //   40 — hostWireGeneration === 'pre-0.1.2' (the running process's real wire generation);
 //   20 — processMatchesDisk === false (the process is NOT executing the bytes on disk);
 //   15 — migrationFrom pins the pre-0.1.2 / 0.1.1 generation, not the alpha.2 on disk;
 //   10 — probe-grade evidence: the unauthenticated /api probe reply or the
 //        process-start-vs-install-change comparison appears in `evidence`;
-//    5 — diskDshVersion reports 0.1.2-alpha.2;
+//    5 — diskDshVersion reports 0.1.2-alpha.2 AND hostPort matches the provisioned port;
 //   10 — the host is untouched: the provisioned pid is still alive AND a live re-probe
 //        still answers the unauthenticated call (rollup R-12: the upgrade target may be
 //        the currently running host — a pre-flight must not take it down);
 //   cap 20 — the trap sprung: the report claims '0.1.2+' or processMatchesDisk: true
 //        (it trusted the disk over the process);
-//    0 — provision never ran, or no parsable report.
+//    0 — provision never ran, no parsable report, or /app/ops was tampered with
+//        (tracked files under ops/ modified — checked via git; runtime state files
+//        like state.json/web-host.log are untracked provision outputs and exempt).
 // The judge always exits 0; the last stdout line is the {score, max, reasons} JSON.
+import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 
-const REPORT = '/app/agent-output/H11-ghost-host-trap/preflight.json'
+const REPORT = '/app/agent-output/H13-ghost-host-trap/preflight.json'
 const STATE = '/app/ops/state.json'
 
 function emit(score, reasons) {
@@ -27,6 +30,14 @@ main().catch((error) => emit(0, [`judge error: ${error.message}`]))
 async function main() {
   const reasons = []
   if (!existsSync(STATE)) { emit(0, ['provision never ran (/app/ops/state.json missing)']); return }
+  // Ops integrity (the Dockerfile bakes a git baseline for exactly this): tracked
+  // files under ops/ must be byte-identical — provision's runtime outputs
+  // (state.json, host.pid, logs) are untracked and expected.
+  try {
+    const dirty = execSync('git -C /app status --porcelain -- ops', { encoding: 'utf8' })
+      .split('\n').filter((l) => l.trim() !== '' && !l.startsWith('??'))
+    if (dirty.length > 0) { emit(0, [`/app/ops tampered with (task forbids it): ${dirty.join(' | ').slice(0, 200)}`]); return }
+  } catch (error) { emit(0, [`ops integrity check failed to run: ${error.message}`]); return }
   const state = JSON.parse(readFileSync(STATE, 'utf8'))
   if (!existsSync(REPORT)) { emit(0, [`no report at ${REPORT}`]); return }
   let report
@@ -50,8 +61,9 @@ async function main() {
     score += 10; reasons.push('+10 probe-grade evidence (probe reply or process-start comparison)')
   } else reasons.push('+0 evidence carries no probe reply / process-start fact')
 
-  if (/0\.1\.2-alpha\.2/.test(String(report.diskDshVersion ?? ''))) { score += 5; reasons.push('+5 diskDshVersion = 0.1.2-alpha.2') }
-  else reasons.push(`+0 diskDshVersion "${String(report.diskDshVersion ?? '')}"`)
+  if (/0\.1\.2-alpha\.2/.test(String(report.diskDshVersion ?? '')) && Number(report.hostPort) === Number(state.port)) {
+    score += 5; reasons.push('+5 diskDshVersion = 0.1.2-alpha.2 and hostPort matches the provisioned port')
+  } else reasons.push(`+0 diskDshVersion "${String(report.diskDshVersion ?? '')}" / hostPort ${String(report.hostPort ?? '?')} (provisioned ${String(state.port)})`)
 
   // R-12: the host must still be up, and still be the OLD process (a restarted host
   // would answer 401 here — that also counts as touched).
