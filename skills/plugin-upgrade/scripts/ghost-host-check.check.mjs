@@ -12,6 +12,9 @@ export async function runGhostHostChecks() {
   assert.equal(started.getHours(), 16)
   assert.equal(started.getSeconds(), 6)
 
+  // Localized ps output must surface as Invalid Date (main() exits 2 on it, never 1 — #94 review).
+  assert.equal(Number.isNaN(parseLstart('mar. 31 août 16:59:06 2026').getTime()), true, 'non-English lstart must not silently parse')
+
   // Ghost verdict: started before the checkout's last change ⇒ ghost.
   assert.equal(judgeGhost(new Date('2026-08-26T06:13:49Z'), new Date('2026-08-30T13:37:53Z')), true, 'older process must be a ghost')
   assert.equal(judgeGhost(new Date('2026-08-31T08:59:06Z'), new Date('2026-08-30T13:37:53Z')), false, 'newer process must not be a ghost')

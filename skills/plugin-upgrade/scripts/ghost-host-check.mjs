@@ -72,7 +72,9 @@ export function argvReferencesCheckout(argv, checkoutRealPath, resolvePath) {
 }
 
 function run(cmd, args) {
-  return execFileSync(cmd, args, { encoding: 'utf8' }).trim()
+  // LC_ALL=C pins `ps -o lstart=` to the English month grammar parseLstart expects —
+  // localized output (e.g. French) would otherwise parse to Invalid Date (#94 review).
+  return execFileSync(cmd, args, { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } }).trim()
 }
 
 async function main() {
@@ -89,8 +91,28 @@ async function main() {
     process.exit(2)
   }
   const started = parseLstart(lstart)
-  const lastChange = new Date(run('git', ['-C', checkoutArg, 'log', '-1', '--format=%cI']))
-  const describe = run('git', ['-C', checkoutArg, 'describe', '--tags', '--always'])
+  if (Number.isNaN(started.getTime())) {
+    // Environment error, NOT a verdict: exit 2 per the usage contract (exit 1 is
+    // reserved for GHOST — a gate reading this script must never confuse the two).
+    console.error(`cannot parse process start time from ps output: "${lstart}"`)
+    process.exit(2)
+  }
+  let lastChange
+  let describe
+  try {
+    lastChange = new Date(run('git', ['-C', checkoutArg, 'log', '-1', '--format=%cI']))
+    describe = run('git', ['-C', checkoutArg, 'describe', '--tags', '--always'])
+  } catch (error) {
+    console.error(`cannot read the checkout at ${checkoutArg}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`)
+    process.exit(2)
+  }
+  if (Number.isNaN(lastChange.getTime())) {
+    console.error(`cannot parse the checkout's last-change time (git log -1 --format=%cI in ${checkoutArg})`)
+    process.exit(2)
+  }
+  // Clock-skew note: comparing committer time (%cI) with process start time can only
+  // mis-classify in ONE direction (toward "ghost") when clocks disagree — a
+  // conservative failure mode for a pre-flight heuristic.
   const ghost = judgeGhost(started, lastChange)
 
   console.log(`process ${pidArg} started at    ${started.toISOString()}`)

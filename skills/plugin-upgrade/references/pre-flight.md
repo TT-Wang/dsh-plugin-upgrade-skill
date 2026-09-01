@@ -68,7 +68,7 @@ Two checks, before any touchpoint scan:
 
    ```sh
    ps -o lstart= -p <hostPid>
-   git -C <checkout> log -1 --format=%ci
+   git -C <checkout> log -1 --format=%cI
    ```
 
 2. **Probe, don't read version numbers** — send the target host one request whose
