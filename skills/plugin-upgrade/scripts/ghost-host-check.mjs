@@ -32,8 +32,7 @@
 // lstart=`).
 import { execFileSync } from 'node:child_process'
 import { realpathSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
-import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
 
@@ -150,5 +149,11 @@ async function main() {
   process.exit(ghost ? 1 : 0)
 }
 
-const invokedPath = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : undefined
-if (invokedPath === import.meta.url) await main()
+const isMain = (() => {
+  try {
+    return realpathSync(process.argv[1] ?? '') === realpathSync(fileURLToPath(import.meta.url))
+  } catch {
+    return false
+  }
+})()
+if (isMain) await main()

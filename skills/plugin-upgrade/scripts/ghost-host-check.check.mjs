@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
-import { pathToFileURL } from 'node:url'
-import { resolve } from 'node:path'
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { parseLstart, judgeGhost, classifyProbeReply, argvReferencesCheckout } from './ghost-host-check.mjs'
 
 export async function runGhostHostChecks() {
@@ -39,8 +39,14 @@ export async function runGhostHostChecks() {
   assert.equal(argvReferencesCheckout('no absolute paths here', '/real/checkout', resolvePath), false)
 }
 
-const invokedPath = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : undefined
-if (invokedPath === import.meta.url) {
+const isMain = (() => {
+  try {
+    return realpathSync(process.argv[1] ?? '') === realpathSync(fileURLToPath(import.meta.url))
+  } catch {
+    return false
+  }
+})()
+if (isMain) {
   await runGhostHostChecks()
   console.log('Ghost-host checks OK: lstart parsing, ghost verdict, probe tri-state, argv-checkout resolution')
 }
