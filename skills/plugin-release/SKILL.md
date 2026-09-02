@@ -18,7 +18,7 @@ Ship developed, tested plugins safely. Publishing is a one-way outbound action �
 | hub listing | register in the hub catalog | Registration is a separate action and does not replace packaging validation |
 | collection | member plugins vendored into a pack artifact | Follow the owning collection repository's own process |
 
-The unpublished cohort (for example a cohort version that was never published to npm — alpha.1 was GitHub-only; alpha.2 and alpha.3 are published under the `alpha` dist-tag) goes through the overrides flow in [references/publish-playbook.md](references/publish-playbook.md). **Do not** look for versions that do not exist on npm, and do not switch package managers because of it.
+The unpublished cohort (for example a cohort version that was never published to npm — alpha.1 was GitHub-only; alpha.2 through alpha.4 are published under the `alpha` dist-tag) goes through the overrides flow in [references/publish-playbook.md](references/publish-playbook.md). **Do not** look for versions that do not exist on npm, and do not switch package managers because of it.
 
 ## Step 1: pack and validate the artifact
 

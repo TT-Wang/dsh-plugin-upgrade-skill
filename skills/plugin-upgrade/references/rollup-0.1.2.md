@@ -1,6 +1,6 @@
 # Rollup · 0.1.1 → 0.1.2 Corridor
 
-> Status: based on `dsh-v0.1.2-alpha.3`. The 0.1.2 final release is not out yet — measured on npm dist-tags on 2026-09-01, `latest`/`next` = `0.1.1-rc.2` and `alpha` = `0.1.2-alpha.3` (note: `0.1.2-alpha.4` shipped later on 2026-09-01 and is not yet covered by this corridor or the alpha.3 card). Once the final release ships, this file must be re-verified and promoted against the final tag (the original caveat in [issue #1](https://github.com/oh-my-dsh/dsh-plugin-upgrade-skill/issues/1)).
+> Status: based on `dsh-v0.1.2-alpha.4`. The 0.1.2 final release is not out yet — measured on npm dist-tags on 2026-09-02, `latest`/`next` = `0.1.1-rc.2` and `alpha` = `0.1.2-alpha.4` (the alpha.3→alpha.4 edge is carded in [v0.1.2-alpha.4.md](v0.1.2-alpha.4.md)). Once the final release ships, this file must be re-verified and promoted against the final tag (the original caveat in [issue #1](https://github.com/oh-my-dsh/dsh-plugin-upgrade-skill/issues/1)).
 > Scope: this file does not repeat the version cards. Each change is governed by its card; this file only covers corridor-level increments — cross-cohort coexistence, unpublished-cohort installation, CI/release coupling, pre-migration inventory and baseline attribution, boot-race handling, the three install-channel pitfalls, type-surface export drift, the host's own safety boundary, and the layered validation checklist.
 > Card format: see [README.md](README.md). Touchpoint numbers correspond to the [pre-flight checklist](pre-flight.md).
 
@@ -31,7 +31,7 @@
 
 0. Before starting the migration, collect the baseline per R-06 (i.e., layer 0 of the layered validation checklist);
 1. First run [pre-flight.md](pre-flight.md) to find the touchpoint classes you hit;
-2. Read the full corridor along `from → to` and compute the net state first: [v0.1.2-alpha.1.md](v0.1.2-alpha.1.md) → [v0.1.2-alpha.2.md](v0.1.2-alpha.2.md) → [v0.1.2-alpha.3.md](v0.1.2-alpha.3.md) (per-file card counts are in the [README.md](README.md) index; the alpha.2→alpha.3 edge has zero cards);
+2. Read the full corridor along `from → to` and compute the net state first: [v0.1.2-alpha.1.md](v0.1.2-alpha.1.md) → [v0.1.2-alpha.2.md](v0.1.2-alpha.2.md) → [v0.1.2-alpha.3.md](v0.1.2-alpha.3.md) → [v0.1.2-alpha.4.md](v0.1.2-alpha.4.md) (per-file card counts are in the [README.md](README.md) index; the alpha.2→alpha.3 edge has zero cards, alpha.3→alpha.4 has six);
 3. Return to this file for corridor-level problems — these span single versions and are not covered by the cards;
 4. Finish with the layered validation checklist at the end of this file.
 
@@ -97,15 +97,15 @@ The following problems span single versions or fall outside the cards; they come
 
   ```sh
   git clone https://github.com/deepseek-ai/deepseek-harness.git /tmp/dsh-build
-  cd /tmp/dsh-build && git checkout dsh-v0.1.2-alpha.3
+  cd /tmp/dsh-build && git checkout dsh-v0.1.2-alpha.4
   pnpm install && pnpm run build
-  mkdir -p ~/.dsh-cohorts/0.1.2-alpha.3
-  pnpm -r exec pnpm pack --pack-destination ~/.dsh-cohorts/0.1.2-alpha.3
+  mkdir -p ~/.dsh-cohorts/0.1.2-alpha.4
+  pnpm -r exec pnpm pack --pack-destination ~/.dsh-cohorts/0.1.2-alpha.4
   ```
 
-  In the manifest, write the range as `^0.1.2-alpha.3`; once the final release ships, deleting the overrides section returns to registry resolution.
+  In the manifest, write the range as `^0.1.2-alpha.4`; once the final release ships, deleting the overrides section returns to registry resolution.
 - **Note (pending confirmation)**: the pnpm version pin below comes from a single field report and has not been reproduced in other repositories — the report says `11.9.0` bypasses overrides for file: tarball transitive dependencies when third-party peers are present, looking for nonexistent versions on the registry; pinning `packageManager: pnpm@11.24.0` resolves correctly. Before adopting it, run a minimal reproduction in the target repository; once verified, backfill the results and promote this entry (keep it in sync with the "Pending confirmation" section at the end of this file).
-- **npm reality** (2026-08-31): on npm, the `@deepseek-ai/dsh-*` packages only have `0.1.1-rc.1`, `0.1.1-rc.2`, and `0.1.2-alpha.2`; alpha.1 was never published. rc.2 → alpha.1 can only be built from a GitHub tag; for the alpha.2 target, query the registry first. (Update: `0.1.2-alpha.3` is now published under the `alpha` dist-tag, so the cohort steps above use the alpha.3 tag; the unpublished-cohort flow below stays as the fallback for any version the registry lacks.)
+- **npm reality** (2026-08-31): on npm, the `@deepseek-ai/dsh-*` packages only have `0.1.1-rc.1`, `0.1.1-rc.2`, and `0.1.2-alpha.2`; alpha.1 was never published. rc.2 → alpha.1 can only be built from a GitHub tag; for the alpha.2 target, query the registry first. (Update: `0.1.2-alpha.3` and `0.1.2-alpha.4` are published under the `alpha` dist-tag — `alpha` resolves to alpha.4 as of 2026-09-02 — so the cohort steps above use the alpha.4 tag; the unpublished-cohort flow below stays as the fallback for any version the registry lacks.)
 - **Verify-only, no install** ([dsh-TUI #622](https://github.com/ccch1mneyyy/dsh-TUI/pull/622)): keep the install baseline at rc.2; CI checks out the upstream tag and runs `tsc --noEmit` with the `paths` mapping from its `tsconfig.base.json` pointing at the source. This proves the type surface; runtime is verified separately — [dsh-TUI #647](https://github.com/ccch1mneyyy/dsh-TUI/pull/647) kept this lane even after going npm on alpha.2.
 - **Verification**: `pnpm list --depth 0 | grep @deepseek-ai` all points at the target version, with no mixture.
 - **Source**: item 1 of [#5120](https://github.com/deepseek-ai/deepseek-harness/discussions/5120). Not covered by the official release notes; community practice.
